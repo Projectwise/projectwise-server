@@ -1,15 +1,9 @@
-const JWT = require('jsonwebtoken')
-const crypto = require('crypto')
 const validator = require('validator')
 const passport = require('passport')
 const series = require('async/series')
 
 const User = require('../models/User')
 const generateRandomToken = require('../utils').generateRandomToken
-
-function generateWebToken (user) {
-  return JWT.sign(user, process.env.SECRET)
-}
 
 exports.register = (req, res, next) => {
   let { user, errors } = validateUser(req.body)

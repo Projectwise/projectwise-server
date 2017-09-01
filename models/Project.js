@@ -1,24 +1,34 @@
 const mongoose = require('mongoose')
-const slugify = require('../utils').slugify
+const uniqueValidator = require('mongoose-unique-validator')
+const slugify = require('slug')
 
 const ProjectSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  title: { type: String, required: true },
   slug: { type: String, unique: true, index: true },
   addedBy: { type: mongoose.Schema.ObjectId, ref: 'User', required: true },
   isActive: { type: Boolean, default: true },
+  likeCount: {type: Number, default: 0},
   description: { type: String, required: true },
   helpDescription: { type: String },
-  helpCategories: [{type: mongoose.Schema.ObjectId, ref: 'Category'}],
+  categories: [{type: String}],
   meta: {
     projectUrl: {type: String, required: true, unique: true},
     homepage: {type: String}
-  },
-  createdAt: { type: Date, default: Date.now() }
-})
+  }
+}, {timestamps: true})
 
-ProjectSchema.pre('save', function (next) {
-  this.slug = slugify(this.name)
+ProjectSchema.plugin(uniqueValidator, {message: 'is already taken'})
+
+ProjectSchema.pre('validate', function (next) {
+  if (!this.slug) {
+    this.slug = slugify(this.title)
+  }
   next()
 })
 
-module.exports = mongoose.model('Project', ProjectSchema)
+ProjectSchema.methods.updateLikeCount = function () {
+  let project = this
+
+}
+
+mongoose.model('Project', ProjectSchema)

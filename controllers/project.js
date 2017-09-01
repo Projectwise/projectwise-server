@@ -1,7 +1,33 @@
 const Project = require('../models/Project')
 const validator = require('validator')
+const errors = require('../utils/errors')
+
+// Preload project object on routes with :project
+exports.preloadProject = (req, res, next, slug) => {
+  Project.findOne({slug})
+  .populate('addedBy')
+  .then((project) => {
+    if (!project) {
+      return next(errors.notFoundError('Project not found'))
+    }
+    req.project = project
+    return next()
+  }).catch(next)
+}
 
 exports.getAllProjects = (req, res, next) => {
+  let query = {}
+  let limit = 20
+  let offset = 0
+
+  if (typeof req.query.limit !== 'undefined') {
+    limit = req.query.limit
+  }
+
+  if (typeof req.query.offset !== 'undefined') {
+    offset = req.query.offset
+  }
+
   Project.find().exec()
     .then((projects) => {
       return res.status(200).json({

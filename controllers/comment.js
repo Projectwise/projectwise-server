@@ -1,4 +1,14 @@
 const Comment = require('../models/Comment')
+const errors = require('../utils/errors')
+
+exports.preloadComment = (req, res, next, id) => {
+  Comment.findById(id)
+  .populate('author')
+  .then((comment) => {
+    if (!comment) { return errors.notFoundError('Comment not found') }
+    next()
+  }).catch(next)
+}
 
 exports.getAllComents = (req, res, next) => {
   const discussionId = req.params.projectId

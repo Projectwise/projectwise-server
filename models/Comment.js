@@ -1,13 +1,21 @@
 const mongoose = require('mongoose')
 
-const CommentSchema = new mongoose.Schema({
-  discussion_id: { type: mongoose.Schema.ObjectId, required: true },
-  posted: {type: Date, default: Date.now()},
-  author: {
-    id: mongoose.Schema.ObjectId,
-    name: String
+const CommentSchema = new mongoose.Schema(
+  {
+    discussion_id: {type: mongoose.Schema.ObjectId, ref: 'Project', required: true},
+    author: {type: mongoose.Schema.ObjectId, ref: 'User', required: true},
+    body: {type: String, required: true}
   },
-  text: {type: String, required: true}
-})
+  {timestamps: true}
+)
+
+CommentSchema.methods.toJSONP = function (user) {
+  return {
+    id: this._id,
+    body: this.body,
+    createdAt: this.createdAt,
+    author: this.author.toProfileJSON(user)
+  }
+}
 
 module.exports = mongoose.model('Comment', CommentSchema)
