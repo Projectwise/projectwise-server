@@ -1,100 +1,78 @@
 const mongoose = require('mongoose')
+const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
-const JWT = require('jsonwebtoken')
-const uniqueValidator = require('mongoose-unique-validator')
+const _ = require('lodash')
 
 const UserSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: [true, "can't be blank"],
-    lowercase: true,
-    unique: true,
-    match: [/\S+@\S+\.\S+/, 'is invalid'],
-    index: true
-  },
-  password: { type: String, required: [true, "can't be blank"] },
-  token: {
-    github: {type: String}
-  },
-  likes: [{type: mongoose.Schema.Types.ObjectId, ref: 'Project'}],
-  profile: {
-    firstName: { type: String, required: [true, "can't be blank"] },
-    lastName: { type: String, required: [true, "can't be blank"] },
-    bio: String,
-    image: String,
-    github: String,
-    dribbble: String,
-    behance: String,
-    website: String
-  }
+  username: {type: String, unique: true},
+  email: {type: String, unique: true, required: true, lowercase: true, index: true},
+  phone: {type: String, unique: true},
+  password: {type: String, required: true},
+  firstName: String,
+  lastName: String,
+  profileImage: String
 }, {timestamps: true})
 
-UserSchema.plugin(uniqueValidator, {message: 'is already taken'})
-
-UserSchema.pre('save', function (next) {
-  const SALT_FACTOR = 5
+UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) next()
-
-  bcrypt.genSalt(SALT_FACTOR)
-    .then((salt) => {
-      bcrypt.hash(this.password, salt)
-        .then(hash => {
-          this.password = hash
-          next()
-        })
-        .catch(next)
-    })
-    .catch(next)
+  const SALT_FACTOR = 5
+  try {
+    const salt = await bcrypt.genSalt(SALT_FACTOR)
+    this.password = await bcrypt.hash(this.password, salt)
+    next()
+  } catch (e) {
+    next(e)
+  }
 })
 
-UserSchema.methods.comparePassword = function (validatePassword, cb) {
-  bcrypt.compare(validatePassword, this.password, function (err, isMatch) {
-    if (err) return cb(err)
-    cb(null, isMatch)
+UserSchema.methods.verifyPassword = function (password) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = await bcrypt.compare(password, this.password)
+      return resolve(isValid)
+    } catch (e) {
+      return reject(e)
+    }
   })
 }
 
 UserSchema.methods.generateJWT = function () {
-  let today = new Date()
-  let exp = new Date(today)
-  exp.setDate(today.getDate() + 60)
+  const today = new Date()
+  let expiry = new Date(today)
+  expiry.setDate(today.getDate() + 60)
 
-  return JWT.sign({
+  return jwt.sign({
     id: this._id,
     email: this.email,
-    exp: parseInt(exp.getTime() / 1000)
-  }, process.env.SECRET)
+    exp: parseInt(expiry.getTime() / 1000)
+  }, process.env.JWT_SECRET)
 }
 
-UserSchema.methods.toAuthJSON = function () {
-  return {
-    ...this.profile
+UserSchema.methods.toAuthJSON = function (token) {
+  const auth = {
+    id: this._id,
+    username: this.username,
+    email: this.email,
+    phone: this.phone,
+    token: token || this.generateJWT(),
+    first_name: this.firstName,
+    last_name: this.lastName,
+    profile_image: this.profileImage
   }
+
+  return _.omitBy(auth, _.isNil)
 }
 
 UserSchema.methods.toProfileJSON = function () {
-  return {
-    ...this.profile,
-    likes: this.likes
+  const profile = {
+    id: this._id,
+    username: this.username,
+    profile_image: this.profileImage,
+    first_name: this.firstName,
+    last_name: this.lastName
   }
+
+  return _.omitBy(profile, _.isNil)
 }
 
-UserSchema.methods.like = function (id) {
-  if (this.likes.indexOf(id) === -1) {
-    this.likes.push(id)
-  }
-  return this.save()
-}
-
-UserSchema.methods.dislike = function (id) {
-  this.likes.remove(id)
-  return this.save()
-}
-
-UserSchema.methods.hasLiked = function (id) {
-  return this.likes.some((likeId) => {
-    return likeId.toString() === id.toString()
-  })
-}
-
-mongoose.model('User', UserSchema)
+module.exports = mongoose.model('User', UserSchema)

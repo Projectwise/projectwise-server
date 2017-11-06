@@ -3,11 +3,13 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const logger = require('morgan')
 const cors = require('cors')
+const errorhandler = require('errorhandler')
 const passport = require('passport')
 
 require('dotenv').config()
 
-const router = require('./router')
+const isProduction = process.env.NODE_ENV === 'production'
+const mongoURI = isProduction ? process.env.DB : process.env.LOCAL_DB
 
 mongoose.Promise = global.Promise
 
@@ -18,32 +20,45 @@ connectDB()
 
 const app = express()
 
-app.use(passport.initialize())
+// TODO: CORS settings
+app.use(cors())
 
-app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
 
 app.use(logger('dev'))
 
-app.use(cors())
+if (!isProduction) {
+  app.use(errorhandler())
+}
 
-router(app)
+// passport
+require('./config/passport')
+console.log(passport)
+
+app.use(require('./routes'))
 
 app.use((err, req, res, next) => {
-  if (req.app.get('env') !== 'development') {
+  if (isProduction) {
+    return res.status(err.status || 500).json({
+      errors: {
+        message: err.message || 'Something went wrong',
+        details: err.details || 'No details specified'
+      }
+    })
   }
   console.log(err)
   return res.status(err.statusCode || 500).json({
     errors: {
-      message: (err.message) ? err.message : 'Something went wrong',
-      details: (err.details) ? err.details : 'No details specified'
+      message: err.message || 'Something went wrong',
+      details: err
     }
   })
 })
 
 function connectDB () {
   const options = {server: {socketOptions: {keepAlive: 1}}}
-  return mongoose.connect(process.env.DB, options).connection
+  return mongoose.connect(mongoURI, options).connection
 }
 
 function listen () {
