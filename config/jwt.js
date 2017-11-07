@@ -26,6 +26,7 @@ passport.use(JWTLogin)
 const JWTOptional = (req, res, next) => {
   passport.authenticate('jwt', (err, user, info) => {
     if (err) return next(err)
+    req.user = user
     return next()
   })(req, res, next)
 }

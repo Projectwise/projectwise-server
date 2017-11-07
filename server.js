@@ -34,7 +34,6 @@ if (!isProduction) {
 
 // passport
 require('./config/passport')
-console.log(passport)
 
 app.use(require('./routes'))
 

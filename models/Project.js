@@ -57,4 +57,4 @@ ProjectSchema.methods.toProjectJSON = function (user) {
   }
 }
 
-module.exports = mongoose.model('Article', ProjectSchema)
+module.exports = mongoose.model('Project', ProjectSchema)
