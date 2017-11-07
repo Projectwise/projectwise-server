@@ -4,13 +4,12 @@ const bcrypt = require('bcrypt')
 const _ = require('lodash')
 
 const UserSchema = new mongoose.Schema({
-  username: {type: String, unique: true},
+  username: {type: String},
   email: {type: String, unique: true, required: true, lowercase: true, index: true},
-  phone: {type: String, unique: true},
-  password: {type: String, required: true},
-  firstName: String,
-  lastName: String,
-  profileImage: String
+  password: {type: String},
+  name: String,
+  avatar: String,
+  likes: [{type: mongoose.Schema.Types.ObjectId, ref: 'Project'}]
 }, {timestamps: true})
 
 UserSchema.pre('save', async function (next) {
@@ -24,6 +23,22 @@ UserSchema.pre('save', async function (next) {
     next(e)
   }
 })
+
+UserSchema.methods.like = function (id) {
+  if (this.likes.indexOf(id) === -1) {
+    this.likes.push(id)
+  }
+  return this.save()
+}
+
+UserSchema.methods.dislike = function (id) {
+  this.likes.remove(id)
+  return this.save()
+}
+
+UserSchema.methods.isLiked = function (id) {
+  return this.likes.some((projectId) => projectId.toString() === id.toString())
+}
 
 UserSchema.methods.verifyPassword = function (password) {
   return new Promise(async (resolve, reject) => {
@@ -45,7 +60,7 @@ UserSchema.methods.generateJWT = function () {
     id: this._id,
     email: this.email,
     exp: parseInt(expiry.getTime() / 1000)
-  }, process.env.JWT_SECRET)
+  }, process.env.SECRET)
 }
 
 UserSchema.methods.toAuthJSON = function (token) {
@@ -53,11 +68,9 @@ UserSchema.methods.toAuthJSON = function (token) {
     id: this._id,
     username: this.username,
     email: this.email,
-    phone: this.phone,
     token: token || this.generateJWT(),
-    first_name: this.firstName,
-    last_name: this.lastName,
-    profile_image: this.profileImage
+    name: this.name,
+    avatar: this.avatar
   }
 
   return _.omitBy(auth, _.isNil)
@@ -68,8 +81,8 @@ UserSchema.methods.toProfileJSON = function () {
     id: this._id,
     username: this.username,
     profile_image: this.profileImage,
-    first_name: this.firstName,
-    last_name: this.lastName
+    name: this.name,
+    avatar: this.avatar
   }
 
   return _.omitBy(profile, _.isNil)

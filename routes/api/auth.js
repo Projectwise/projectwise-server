@@ -15,8 +15,26 @@ router.post('/login', validate.login, (req, res, next) => {
   }
   passport.authenticate('local', {session: false}, (err, user, info) => {
     if (err) return next(err)
-    if (user) return res.status(HttpStatus.OK).json({ user: user.toAuthJSON() })
-    else return res.status(HttpStatus.UNPROCESSABLE_ENTITY).json(info)
+    if (user) {
+      return res.status(HttpStatus.OK).json({
+        user: user.toAuthJSON()
+      })
+    } else {
+      return res.status(HttpStatus.UNPROCESSABLE_ENTITY).json(info)
+    }
+  })(req, res, next)
+})
+
+router.get('/auth/github', (req, res, next) => {
+  passport.authenticate('github-token', (err, user, info) => {
+    if (err) return next(err)
+    if (user) {
+      return res.status(HttpStatus.OK).json({
+        user: user.toAuthJSON()
+      })
+    } else {
+      return res.status(HttpStatus.UNPROCESSABLE_ENTITY).json(info)
+    }
   })(req, res, next)
 })
 

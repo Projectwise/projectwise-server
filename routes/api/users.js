@@ -25,7 +25,7 @@ router.post('/signup', validate.add, async (req, res, next) => {
   }
 })
 
-router.get('/me', jwt.isAuthenticated, (req, res, next) => {
+router.get('/me', jwt.authenticated, (req, res, next) => {
   const user = req.user
   return res.status(HttpStatus.OK).json({
     user: user.toProfileJSON()
