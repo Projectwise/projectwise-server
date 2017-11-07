@@ -51,7 +51,7 @@ ProjectSchema.methods.toProjectJSON = function (user) {
     addedBy: this.addedBy.toProfileJSON(),
     active: this.active,
     likeCount: this.likeCount,
-    liked: user ? user.isLiked(this._id) : false,
+    liked: user ? user.hasLiked(this._id) : false,
     created_at: this.createdAt,
     updated_at: this.updated_at
   }

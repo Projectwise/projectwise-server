@@ -36,7 +36,7 @@ UserSchema.methods.dislike = function (id) {
   return this.save()
 }
 
-UserSchema.methods.isLiked = function (id) {
+UserSchema.methods.hasLiked = function (id) {
   return this.likes.some((projectId) => projectId.toString() === id.toString())
 }
 
