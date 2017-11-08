@@ -16,3 +16,13 @@ exports.update = [
   check('categories').optional(),
   sanitize(['title', 'description', 'projectUrl', 'categories']).trim()
 ]
+
+exports.addComment = [
+  check('body').exists().withMessage('Comment cannot be empty'),
+  sanitize(['body']).trim()
+]
+
+exports.updateComment = [
+  check('body').optional(),
+  sanitize(['body']).trim()
+]

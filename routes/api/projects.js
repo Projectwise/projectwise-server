@@ -180,7 +180,7 @@ router.get('/:project/comments', jwt.optional, async (req, res, next) => {
   }
 })
 
-router.post('/:project/comments', jwt.authenticated, validate.add, async (req, res, next) => {
+router.post('/:project/comments', jwt.authenticated, validate.addComment, async (req, res, next) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return next({
@@ -194,7 +194,8 @@ router.post('/:project/comments', jwt.authenticated, validate.add, async (req, r
       project: req.project,
       author: req.user
     }).save()
-    await req.project.comments.push(comment)
+    req.project.comments.push(comment)
+    await req.project.save()
     return res.status(HttpStatus.OK).json({
       comment: comment.toCommentJSON()
     })
