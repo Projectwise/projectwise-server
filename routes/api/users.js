@@ -32,4 +32,23 @@ router.get('/me', jwt.authenticated, (req, res, next) => {
   })
 })
 
+router.get('/:userId', jwt.optional, async (req, res, next) => {
+  const userId = req.params.userId
+  try {
+    const user = await User.findOne({ userId })
+    if (!user) {
+      return next({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'User not found',
+        details: {
+          project: `No user found for ${userId}`
+        }
+      })
+    }
+    return res.status(HttpStatus.OK).json({ user })
+  } catch (err) {
+    return next(err)
+  }
+})
+
 module.exports = router

@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 const _ = require('lodash')
 
 const UserSchema = new mongoose.Schema({
-  username: {type: String},
+  username: {type: String, required: true, index: true},
   email: {type: String, unique: true, required: true, lowercase: true, index: true},
   password: {type: String},
   name: String,
@@ -58,7 +58,7 @@ UserSchema.methods.generateJWT = function () {
 
   return jwt.sign({
     id: this._id,
-    email: this.email,
+    user: this.toProfileJSON(),
     exp: parseInt(expiry.getTime() / 1000)
   }, process.env.SECRET)
 }

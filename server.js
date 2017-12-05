@@ -4,7 +4,6 @@ const bodyParser = require('body-parser')
 const logger = require('morgan')
 const cors = require('cors')
 const errorhandler = require('errorhandler')
-const passport = require('passport')
 
 require('dotenv').config()
 

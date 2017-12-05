@@ -6,7 +6,8 @@ exports.add = [
   check('description').exists().withMessage('Description cannot be empty'),
   check('projectUrl').optional(),
   check('categories').exists().withMessage('Please pick at least one category'),
-  sanitize(['title', 'description', 'projectUrl', 'categories']).trim()
+  check('helpDescription').exists().withMessage('Help description cannot be empty'),
+  sanitize(['title', 'description', 'projectUrl', 'categories', 'helpDescription']).trim()
 ]
 
 exports.update = [
@@ -14,6 +15,7 @@ exports.update = [
   check('description').optional(),
   check('projectUrl').optional(),
   check('categories').optional(),
+  check('helpDescription').optional(),
   sanitize(['title', 'description', 'projectUrl', 'categories']).trim()
 ]
 

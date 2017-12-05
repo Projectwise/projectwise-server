@@ -66,6 +66,11 @@ router.get('/', jwt.optional, async (req, res, next) => {
         .skip(Number(offset))
         .sort({createdAt: 'desc'})
         .populate('addedBy')
+        .populate({
+          path: 'comments',
+          populate: { path: 'author' },
+          options: { sort: { createdAt: 'desc' } }
+        })
         .exec(),
       Project.count(query).exec()
     ])

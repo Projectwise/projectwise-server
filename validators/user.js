@@ -4,7 +4,7 @@ const { sanitize } = require('express-validator/filter')
 
 exports.add = [
   check('username')
-    .optional().trim().isLength({min: 2})
+    .exists().trim().isLength({min: 2})
     .withMessage('Username should be atleast 2 characters long')
     .custom(async username => !(await User.findOne({ username }) !== null))
     .withMessage('This username is already in use'),
