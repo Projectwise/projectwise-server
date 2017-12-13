@@ -66,16 +66,16 @@ router.get('/', jwt.optional, async (req, res, next) => {
         .skip(Number(offset))
         .sort({createdAt: 'desc'})
         .populate('addedBy')
-        .populate({
-          path: 'comments',
-          populate: { path: 'author' },
-          options: { sort: { createdAt: 'desc' } }
-        })
         .exec(),
       Project.count(query).exec()
     ])
     return res.status(HttpStatus.OK).json({
-      projects: projects[0].map(project => project.toProjectJSON(req.user || null)),
+      projects: projects[0].map(project => {
+        return {
+          ...project.toProjectJSON(req.user || null),
+          commentsCount: project.comments.length
+        }
+      }),
       projectsCount: projects[1]
     })
   } catch (e) { return next(e) }
@@ -104,7 +104,10 @@ router.get('/:project', jwt.optional, async (req, res, next) => {
   try {
     req.project = await req.project.populate('addedBy').execPopulate()
     return res.status(HttpStatus.OK).json({
-      project: req.project.toProjectJSON(req.user || null)
+      project: {
+        ...req.project.toProjectJSON(req.user || null),
+        commentsCount: req.project.comments.length
+      }
     })
   } catch (e) {
     next(e)

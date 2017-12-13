@@ -44,14 +44,12 @@ ProjectSchema.methods.setInactive = function () {
 
 ProjectSchema.methods.toProjectJSON = function (user) {
   return {
-    id: this._id,
     slug: this.slug,
     title: this.title,
     description: this.description,
     projectUrl: this.projectUrl,
     categories: this.categories,
     addedBy: this.addedBy.toProfileJSON(),
-    comments: this.comments,
     active: this.active,
     likeCount: this.likeCount,
     liked: user ? user.hasLiked(this._id) : false,
