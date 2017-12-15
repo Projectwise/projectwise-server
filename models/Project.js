@@ -47,6 +47,7 @@ ProjectSchema.methods.toProjectJSON = function (user) {
     slug: this.slug,
     title: this.title,
     description: this.description,
+    helpDescription: this.helpDescription,
     projectUrl: this.projectUrl,
     categories: this.categories,
     addedBy: this.addedBy.toProfileJSON(),
