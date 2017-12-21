@@ -44,6 +44,7 @@ ProjectSchema.methods.setInactive = function () {
 
 ProjectSchema.methods.toProjectJSON = function (user) {
   return {
+    id: this._id,
     slug: this.slug,
     title: this.title,
     description: this.description,
