@@ -55,8 +55,12 @@ app.use((err, req, res, next) => {
 })
 
 function connectDB () {
-  const options = {server: {socketOptions: {keepAlive: 1}}}
-  return mongoose.connect(mongoURI, options).connection
+  const options = {
+    reconnectTries: Number.MAX_VALUE,
+    reconnectInterval: 500
+  }
+  mongoose.connect(mongoURI, options)
+  return mongoose.connection
 }
 
 function listen () {

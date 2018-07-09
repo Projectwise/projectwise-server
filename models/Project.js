@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const slug = require('slug')
+const slug = require('limax')
 const User = require('./User')
 
 const ProjectSchema = new mongoose.Schema({
