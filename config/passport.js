@@ -29,6 +29,7 @@ const LocalLogin = new LocalStrategy(localOptions, async (email, password, done)
 
 const GithubLogin = new GithubStrategy(githubOptions,
   async (req, accessToken, refreshToken, profile, done) => {
+    profile = profile._json
     try {
       const user = await User.findOne({email: profile.email})
       if (user) return done(null, user)
